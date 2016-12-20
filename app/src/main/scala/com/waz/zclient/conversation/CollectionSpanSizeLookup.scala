@@ -25,7 +25,9 @@ class CollectionSpanSizeLookup(val spanCount: Int, val adapter: CollectionAdapte
   private implicit val tag: LogTag = logTagFor[CollectionSpanSizeLookup]
 
   override def getSpanSize(position: Int): Int = {
-    if (isLastBeforeHeader(position)) {
+    if (adapter.isFullSpan(position)) {
+      spanCount
+    } else if (isLastBeforeHeader(position)) {
       val itemsInCategory = getNumberOfItemsBeforePositionInCategory(position)
       val columnIndex = itemsInCategory % spanCount
       1 + (spanCount - (columnIndex + 1))
@@ -37,7 +39,8 @@ class CollectionSpanSizeLookup(val spanCount: Int, val adapter: CollectionAdapte
   def isLastBeforeHeader(position: Int): Boolean = {
     val headerId = adapter.getHeaderId(position)
     val nextPosition = position + 1
-    nextPosition >= 0 && nextPosition < adapter.getItemCount && headerId != adapter.getHeaderId(nextPosition)
+    val res = nextPosition >= 0 && nextPosition < adapter.getItemCount && headerId != adapter.getHeaderId(nextPosition)
+    res
   }
 
   def getNumberOfItemsBeforePositionInCategory(position: Int): Int = {

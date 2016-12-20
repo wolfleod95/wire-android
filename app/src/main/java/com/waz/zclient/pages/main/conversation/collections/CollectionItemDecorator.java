@@ -88,6 +88,7 @@ public class CollectionItemDecorator extends RecyclerView.ItemDecoration {
         if (itemPosition == 0) {
             return true;
         }
+        spanCount = adapter.isFullSpan(itemPosition) ? 1 : spanCount;
         int headerId = adapter.getHeaderId(itemPosition);
         for (int i = 1; i < spanCount + 1; i++) {
             long previousHeaderId = -1;

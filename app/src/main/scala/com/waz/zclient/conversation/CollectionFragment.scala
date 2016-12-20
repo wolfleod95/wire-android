@@ -27,13 +27,14 @@ import com.waz.threading.Threading
 import com.waz.zclient.pages.BaseFragment
 import com.waz.zclient.pages.main.conversation.collections.CollectionItemDecorator
 import com.waz.zclient.utils.ViewUtils
-import com.waz.zclient.{FragmentHelper, R}
+import com.waz.zclient.{FragmentHelper, OnBackPressedListener, R}
 
-class CollectionFragment extends BaseFragment[CollectionFragment.Container] with FragmentHelper {
+class CollectionFragment extends BaseFragment[CollectionFragment.Container] with FragmentHelper with OnBackPressedListener {
 
   private implicit lazy val context: Context = getContext
 
   lazy val controller = new CollectionController
+  var adapter: CollectionAdapter = null
 
   override def onCreateView(inflater: LayoutInflater, container: ViewGroup, savedInstanceState: Bundle): View = {
     val view = inflater.inflate(R.layout.fragment_collection, container, false)
@@ -41,22 +42,28 @@ class CollectionFragment extends BaseFragment[CollectionFragment.Container] with
     val name: TextView  = ViewUtils.getView(view, R.id.tv__collection_toolbar__name)
     controller.conversationName.on(Threading.Ui)(name.setText)
 
-    val toolbar: Toolbar = ViewUtils.getView(view, R.id.t_collection_toolbar)
-    toolbar.setNavigationOnClickListener(new OnClickListener {
-      override def onClick(v: View): Unit = getControllerFactory.getGiphyController.closeCollection()
-    })
-
     val recyclerView: RecyclerView = ViewUtils.getView(view, R.id.rv__collection)
     val columns = 4
-    val adapter = new CollectionAdapter(ViewUtils.getRealDisplayWidth(context), columns, controller)
+    adapter = new CollectionAdapter(ViewUtils.getRealDisplayWidth(context), columns, controller)
     recyclerView.setAdapter(adapter)
     recyclerView.addItemDecoration(new CollectionItemDecorator(adapter, columns))
     val layoutManager = new GridLayoutManager(context, columns, LinearLayoutManager.VERTICAL, false)
     layoutManager.setSpanSizeLookup(new CollectionSpanSizeLookup(columns, adapter))
     recyclerView.setLayoutManager(layoutManager)
+
+    val toolbar: Toolbar = ViewUtils.getView(view, R.id.t_collection_toolbar)
+    toolbar.setNavigationOnClickListener(new OnClickListener {
+      override def onClick(v: View): Unit = onBackPressed
+    })
+
     view
   }
 
+  override def onBackPressed(): Boolean = {
+    if (!adapter.onBackPressed)
+      getControllerFactory.getGiphyController.closeCollection()
+    true
+  }
 }
 
 object CollectionFragment {

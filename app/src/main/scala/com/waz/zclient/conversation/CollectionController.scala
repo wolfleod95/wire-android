@@ -66,7 +66,7 @@ protected class CollectionController(implicit injector: Injector) extends Inject
 
   //TODO - consider making messageType a Seq and passing that logic down to SE - (if we don't use a cursor)
   private def loadMessagesByType(conv: ConvId, storage: MessagesStorage, limit: Int, messageType: Message.Type) = {
-    storage.find(m => m.convId == conv && m.msgType == messageType, MessageDataDao.findByType(conv, messageType)(_), identity).map(results => results.sortBy(_.time).reverse.take(if (limit > 0) limit else results.length))
+    storage.find(m => m.convId == conv && m.msgType == messageType && !m.isEphemeral, MessageDataDao.findByType(conv, messageType)(_), identity).map(results => results.sortBy(_.time).reverse.take(if (limit > 0) limit else results.length))
   }
 
   def bitmapSignal(assetId: AssetId, width: Int) = zms.flatMap { zms =>
@@ -102,6 +102,6 @@ object CollectionController {
 
   case object All extends Type {
     //feels a little bit messy... maybe think of a neater way to represent the types
-    override val msgTypes = Links.msgTypes ++ Images.msgTypes ++ Files.msgTypes
+    override val msgTypes = Images.msgTypes ++ Files.msgTypes
   }
 }

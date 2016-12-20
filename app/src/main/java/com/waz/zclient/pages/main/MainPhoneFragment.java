@@ -175,8 +175,7 @@ public class MainPhoneFragment extends BaseFragment<MainPhoneFragment.Container>
                 }
                 return true;
             } else if (topFragment instanceof CollectionFragment) {
-                getChildFragmentManager().popBackStackImmediate(CollectionFragment.TAG(), FragmentManager.POP_BACK_STACK_INCLUSIVE);
-                return true;
+                return  ((CollectionFragment) topFragment).onBackPressed();
             }
 
         }
